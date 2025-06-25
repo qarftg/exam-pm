@@ -1,0 +1,25 @@
+---
+
+name: GitHub Classroom Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    name: Autograding
+    runs-on: self-hosted
+    if: github.actor != 'Bot'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
+      - uses: education/autograding@v1

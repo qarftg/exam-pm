@@ -1,0 +1,64 @@
+name: test-check
+
+on:
+  push:
+    branches:
+      - source
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
+
+      - uses: actions/checkout@v4
+      - run: python -V
+      - run: make install
+      - run: make test
+
+      - name: Run linter based flake8
+        uses: py-actions/flake8@v2
+        with:
+          max-line-length: "100"
+          exclude: ".venv/*,dist/*,build/*"
+          max-complexity: "6"
+          plugins: "flake8-bugbear"
+          config: "setup.cfg"
+
+      # - run: make start-server & make test
+
+      - name: setup git config
+        run: |
+          git config user.name "Bot"
+          git config user.email "<>"
+
+      - name: Prepare template
+        run: |
+          git checkout --orphan main source
+
+          echo -e "# Пакет для работы с базой данных\n" > database/__init__.py
+          echo -e "# Здесь должен быть менеджер базы данных согласно README.md\n\nimport sqlite3\nfrom models.book import Book\nfrom models.reader import Reader\nfrom models.loan import Loan\nfrom datetime import datetime\n\nclass DatabaseManager:\n    def __init__(self, db_path=\"library.db\") -> None:\n        pass\n\n    def close(self) -> None:\n        pass\n\n    def create_tables(self) -> None:\n        pass\n\n    def add_book(self, book: Book) -> int:\n        pass\n\n    def get_book_by_id(self, book_id) -> Book | None:\n        pass\n\n    def get_all_books(self) -> list[Book]:\n        pass\n\n    def update_book(self, book_id, **kwargs) -> bool:\n        pass\n\n    def delete_book(self, book_id) -> bool:\n        pass\n\n    def search_books(self, query) -> list[Book]:\n        pass\n\n    def add_reader(self, reader: Reader) -> int:\n        pass\n\n    def get_reader_by_id(self, reader_id) -> Reader | None:\n        pass\n\n    def get_all_readers(self) -> list[Reader]:\n        pass\n\n    def update_reader(self, reader_id, **kwargs) -> bool:\n        pass\n\n    def delete_reader(self, reader_id) -> bool:\n        pass\n\n    def add_loan(self, loan: Loan) -> int:\n        pass\n\n    def get_loan_by_id(self, loan_id) -> Loan | None:\n        pass\n\n    def get_all_loans(self) -> list[Loan]:\n        pass\n\n    def update_loan(self, loan_id, **kwargs) -> bool:\n        pass\n\n    def get_reader_loans(self, reader_id) -> list[Loan]:\n        pass\n\n    def get_overdue_loans(self) -> list[Loan]:\n        pass\n" > database/database_manager.py
+          echo -e "# Пакет контроллеров \n" > controllers/__init__.py
+          echo -e "# Здесь должен быть контроллер для работы с книгами согласно README.md\n\nfrom models.book import Book\n\nclass BookController:\n    def __init__(self, db_manager) -> None:\n        pass\n\n    def add_book(self, title, author, isbn, year, quantity) -> int:\n        pass\n\n    def get_book(self, book_id) -> Book | None:\n        pass\n\n    def get_all_books(self) -> list[Book]:\n        pass\n\n    def update_book(self, book_id, **kwargs) -> bool:\n        pass\n\n    def delete_book(self, book_id) -> bool:\n        pass\n\n    def search_books(self, query) -> list[Book]:\n        pass\n\n    def borrow_book(self, book_id) -> bool:\n        pass\n\n    def return_book(self, book_id) -> bool:\n        pass\n" > controllers/book_controller.py
+          echo -e "# Здесь должен быть контроллер для работы с займами согласно README.md\n\nfrom models.loan import Loan\nfrom datetime import datetime\n\nclass LoanController:\n    def __init__(self, db_manager) -> None:\n        pass\n\n    def create_loan(self, book_id, reader_id, loan_date, return_date) -> int:\n        pass\n\n    def get_loan(self, loan_id) -> Loan | None:\n        pass\n\n    def get_all_loans(self) -> list[Loan]:\n        pass\n\n    def return_book(self, loan_id) -> bool:\n        pass\n\n    def get_overdue_loans(self) -> list[Loan]:\n        pass\n\n    def get_reader_loans(self, reader_id) -> list[Loan]:\n        pass\n" > controllers/loan_controller.py
+          echo -e "# Здесь должен быть контроллер для работы с читателями согласно README.md\n\nfrom models.reader import Reader\n\nclass ReaderController:\n    def __init__(self, db_manager) -> None:\n        pass\n\n    def add_reader(self, name, email, phone) -> int:\n        pass\n\n    def get_reader(self, reader_id) -> Reader | None:\n        pass\n\n    def get_all_readers(self) -> list[Reader]:\n        pass\n\n    def update_reader(self, reader_id, **kwargs) -> bool:\n        pass\n\n    def delete_reader(self, reader_id) -> bool:\n        pass\n\n    def get_reader_loans(self, reader_id) -> list:\n        pass\n" > controllers/reader_controller.py
+          echo -e "# Пакет моделей данных \n" > models/__init__.py
+          echo -e "# Здесь должна быть модель Book согласно README.md\n\nfrom datetime import datetime\n\nclass Book:\n    def __init__(self, title, author, isbn, year, quantity) -> None:\n        pass\n\n    def borrow_book(self) -> bool:\n        pass\n\n    def return_book(self) -> bool:\n        pass\n\n    def is_available(self) -> bool:\n        pass\n\n    def to_dict(self) -> dict:\n        pass\n" > models/book.py
+          echo -e "# Здесь должна быть модель Loan согласно README.md\n\nfrom datetime import datetime\n\nclass Loan:\n    def __init__(self, book_id, reader_id, loan_date, return_date) -> None:\n        pass\n\n    def return_book(self) -> bool:\n        pass\n\n    def is_overdue(self) -> bool:\n        pass\n\n    def to_dict(self) -> dict:\n        pass\n" > models/loan.py
+          echo -e "# Здесь должна быть модель Reader согласно README.md\n\nfrom datetime import datetime\nimport re\n\nclass Reader:\n    def __init__(self, name, email, phone) -> None:\n        pass\n\n    def _is_valid_email(self, email) -> bool:\n        pass\n\n    def update_info(self, name=None, email=None, phone=None) -> None:\n        pass\n\n    def to_dict(self) -> dict:\n        pass\n" > models/reader.py
+          echo -e "# Пакет представлений (GUI) \n" > views/__init__.py
+          echo -e "# Здесь должно быть представление для работы с книгами согласно README.md\n\nimport tkinter as tk\nfrom tkinter import ttk, messagebox\n\nclass BookView(ttk.Frame):\n    def __init__(self, parent, book_controller) -> None:\n        pass\n\n    def create_widgets(self) -> None:\n        pass\n\n    def refresh_books(self) -> None:\n        pass\n\n    def add_book(self) -> None:\n        pass\n\n    def delete_selected(self) -> None:\n        pass\n" > views/book_view.py
+          echo -e "# Здесь должно быть представление для работы с займами согласно README.md\n\nimport tkinter as tk\nfrom tkinter import ttk, messagebox\nfrom datetime import datetime, timedelta\n\nclass LoanView(ttk.Frame):\n    def __init__(self, parent, loan_controller, book_controller, reader_controller) -> None:\n        pass\n\n    def create_widgets(self) -> None:\n        pass\n\n    def refresh_loans(self) -> None:\n        pass\n\n    def create_loan(self) -> None:\n        pass\n\n    def return_selected(self) -> None:\n        pass\n" > views/loan_view.py
+          echo -e "# Здесь должно быть представление для работы с читателями согласно README.md\n\nimport tkinter as tk\nfrom tkinter import ttk, messagebox\n\nclass ReaderView(ttk.Frame):\n    def __init__(self, parent, reader_controller) -> None:\n        pass\n\n    def create_widgets(self) -> None:\n        pass\n\n    def refresh_readers(self) -> None:\n        pass\n\n    def add_reader(self) -> None:\n        pass\n\n    def delete_selected(self) -> None:\n        pass\n" > views/reader_view.py
+          echo -e "# Главное окно приложения согласно README.md\n\nimport tkinter as tk\nfrom tkinter import ttk\nfrom views.book_view import BookView\nfrom views.reader_view import ReaderView\nfrom views.loan_view import LoanView\n\nclass MainWindow(tk.Tk):\n    def __init__(self, book_controller, reader_controller, loan_controller) -> None:\n        pass\n" > views/main_window.py
+
+          rm INSTRUCTIONS_FOR_TEACHER.md
+          git add -A
+          git commit --no-verify -m "Rebuild template (auto)"
+          git push -f --no-verify --set-upstream origin main

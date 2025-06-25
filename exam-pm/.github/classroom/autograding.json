@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "step1",
+      "setup": "",
+      "run": "echo 'autograding tests is not ready yet'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    }
+  ]
+}
